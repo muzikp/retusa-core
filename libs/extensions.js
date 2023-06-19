@@ -1,6 +1,3 @@
-//const dist = require("./distribution");
-const $ = require("./locale").call;
-
 Array.prototype.hasOnlyVectorChildren = function() {
     return this.filter(e => !e?.isVector).length == 0;
 }
