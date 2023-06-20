@@ -23,6 +23,10 @@ module.exports = {
         return module.exports;
     },
     setListener: function(listenerFunction) {
+        module.exports.listener = listenerFunction;
+        return module.exports;
+    },
+    listener: function(event){
 
     },
     toLocale: locale.call,
