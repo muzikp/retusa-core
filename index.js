@@ -22,6 +22,10 @@ module.exports = {
         locale.setDefault(language);
         return module.exports;
     },
+    setListener: function(listenerFunction) {
+
+    },
+    toLocale: locale.call,
     ...require("./libs/vector")
 }
 
