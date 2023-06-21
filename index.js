@@ -23,11 +23,10 @@ module.exports = {
         return module.exports;
     },
     setListener: function(listenerFunction) {
-        module.exports.listener = listenerFunction;
+        module.exports.raise = listenerFunction;
         return module.exports;
     },
-    listener: function(event){
-
+    raise: function(event){        
     },
     toLocale: locale.call,
     ...require("./libs/vector")
