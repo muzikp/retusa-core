@@ -1,4 +1,13 @@
+var eventHandler = async function() {return false};
 const locale = require('./libs/locale');
+Array.prototype.eventHandler = eventHandler;
+Object.prototype.eventHandler = eventHandler;
+Array.eventHandler = eventHandler;
+Object.eventHandler = eventHandler;
+Array.prototype.$ = locale.call;
+Object.prototype.$ = locale.call;
+Array.$ = locale.call;
+Object.$ = locale.call;
 
 module.exports = {
     /**
@@ -10,7 +19,7 @@ module.exports = {
             p(module.exports);
         };
         return module.exports;
-    },
+    },    
     register: function() {
         return module.exports;
     },
@@ -23,12 +32,18 @@ module.exports = {
         return module.exports;
     },
     setListener: function(listenerFunction) {
-        module.exports.raise = listenerFunction;
+        module.exports.call = listenerFunction;
         return module.exports;
     },
-    raise: function(event){        
+    listen: function(fn){
+        eventHandler = fn;
+        Array.prototype.eventHandler = eventHandler;
+        Object.prototype.eventHandler = eventHandler;
+        Array.eventHandler = eventHandler;
+        Object.eventHandler = eventHandler;
+        return module.exports;
     },
     toLocale: locale.call,
-    ...require("./libs/vector")
+    ...(require("./libs/vector"))
 }
 

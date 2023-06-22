@@ -1,9 +1,34 @@
 "use strict";
-var locale = require("./locale");
-var $ = locale.call;
+
 const {Array, Math, String, Function} = require("./extensions");
 const meta = ["name","label","formatter"];
 const registry = new WeakMap();
+let defaultEventHandlers = [
+    {eventName: "vector.value.added", filter: null, on: true, handler: function(event){
+        
+    }},
+    {eventName: "vector.value.changed", filter: null, on: true, handler: function(event){
+        
+    }},
+    {eventName: "vector.value.removed", filter: null, on: true, handler: function(event){
+        
+    }},
+    {eventName: "vector.name.changed", filter: null, on: true, handler: function(event){
+        
+    }},
+    {eventName: "vector.label.changed", filter: null, on: true, handler: function(event){
+        
+    }},
+    {eventName: "vector.created", filter: null, on: true, handler: function(event){
+        
+    }},
+    {eventName: "vector.sample.init", filter: null, on: true, handler: function(event){
+        
+    }},
+    {eventName: "vector.sample.end", filter: null, on: true, handler: function(event){
+        
+    }}
+];
 
 function setRegistryProperty(parent, key, value) {    
     if(!registry.get(parent)) registry.set(parent, {});
@@ -17,39 +42,23 @@ function getRegistryProperty(parent, key = null) {
 class Vector extends Array {
     constructor() {
         super();        
-        registry.set(this, {id: String.fillRnd(16)});
-        if([...arguments].length > 0) 
-        {
-            if(typeof arguments[0] == "function") return this.function(arguments[0]);
-            else this.push(...arguments);
-        };
-    }
-    setLanguage(language) {
-        locale.setDefault(language);
-        return this;
-    }
-    push(){
-        for(let i of [...arguments].flat(Infinity - 1)){
-            if(this.parse) super.push(this.parse(i));
-            else super.push(i);
-        }
-    }
-    /**
-     * Gets an unique ID of this vector, generated while initializing. The value cannot be modified.
-     * @returns {String} An ID of this vector.
-     */
-    id() {
-        return getRegistryProperty(this, "id");
-    }
+        registry.set(this, {id: String.fillRnd(16)});        
+        setRegistryProperty(this, "eventHandlers", defaultEventHandlers);
+        this.trigger("vector.created");
+        if([...arguments].length > 0) this.push(...arguments);        
+    }    
+    //#region METADATA
     /**
      * Gets or sets the name of this vector. If the argument 'value' is empty, it returns the name of this vector (if set before). Otherwise the name of the vector is set and the vector itself is returned.
      * @param {string} value Optional: name of the vector.
      * @param {boolean} alwaysRetunSelf Default false. If set to true, will return the vector itself even if the name is blank/empty.
      * @returns {Vector | String} Either the name or the vector itself.
      */
-    name(value, alwaysRetunSelf){
-        if(value) {
-            setRegistryProperty(this, "name", value);
+    name(value, alwaysRetunSelf){        
+        if(value) {          
+            const old = this.name()  ;
+            setRegistryProperty(this, "name", value);            
+            if(value !== old) this.trigger("vector.name.changed", {old: old, new: value})
             return this;
         } else {
             if(alwaysRetunSelf) return this;
@@ -57,38 +66,89 @@ class Vector extends Array {
         }
     }
     /**
-     * Gets or sets the label for this vector. If the argument 'value' is empty, it returns the label of this vector (if set before). Otherwise the name of the vector is set and the vector itself is returned.
+     * Gets or sets the label for this vector. If the argument 'value' is empty, it returns the label of this vector (if set before). Otherwise the label of the vector is set and the vector itself is returned.
      * @param {string} value Optional: name of the vector.
      * @param {boolean} alwaysRetunSelf Default false. If set to true, will return the vector itself even if the label is blank/empty.
      * @returns {Vector | String} Either the label or the vector itself.
      */
     label(value, alwaysRetunSelf){
         if(value) {
+            const old = getRegistryProperty(this, "label");
             setRegistryProperty(this, "label", value);
+            if(value !== old) this.trigger("vector.label.changed", {old: old, new: value})
             return this;
         } else {
             if(alwaysRetunSelf) return this;
             else return registry.get(this).label || registry.get(this).name;
         }
     }
+    /**
+     * Gets or sets the formatter for this vector. If the argument 'value' is empty, it returns the formatter of this vector (if set before). Otherwise the formatter of the vector is set and the vector itself is returned.
+     * @param {Function | Object} value Optional: either a function of an object.
+     * @param {boolean} alwaysRetunSelf Default false. If set to true, will return the vector itself even if the label is blank/empty.
+     * @returns {Vector | String} Either the formatter or the vector itself.
+     */
     formatter(value, alwaysRetunSelf) {
         if(value) {
+            const old = getRegistryProperty(this, "formatter");
             setRegistryProperty(this, "formatter", value);
+            if(value !== old) this.trigger("vector.formatter.changed", {old: old, new: value})
             return this;
         } else {
             if(alwaysRetunSelf) return this;
             else return registry.get(this).formatter;
         }
     }
-    matrix(value, alwaysRetunSelf) {
-        if(value) {
-            setRegistryProperty(this, "matrix", value);
-            return this;
-        } else {
-            if(alwaysRetunSelf) return this;
-            else return registry.get(this).matrix;
+    /**
+     * Copies the vector metadata (name, label etc.) from a source vector to this vector.
+     * @param {Vector} source The vector from which to copy the vector metadata.
+     * @returns Returns the vector itself.
+     */
+    getMeta(source, includeId) {
+        if(!registry.get(source)) registry.set(source, {});
+        if(!registry.get(this)) registry.set(this, {});
+        let _meta = meta;
+        if(includeId) _meta.push("id");
+        for(let m of meta) {
+            setRegistryProperty(this, m, registry.get(source)[m]);
         }
+        return this;
+    }    
+    /**
+     * Gets ID of this vector, generated while initializing. The value cannot be modified.
+     * @returns {String} An ID of this vector.
+     */
+    id() {
+        return getRegistryProperty(this, "id");
     }
+    //#endregion
+    
+    //#region OVERLOADS
+    concat() {
+        return new this.constructor(...this, ...arguments).getMeta(this);
+    }    
+    push(){        
+        let index = this.length;
+        for(let i of [...arguments].flat(Infinity - 1)){
+            if(this.parse) super.push(this.parse(i));
+            else super.push(i);
+        }
+        this.trigger("vector.value.added", {index: index, count: this.length});
+    }
+    slice() {         
+        var that = this.reload(super.slice.call(this.raw(), ...arguments));
+    }
+    toString() {
+        return this.serialize(true);
+    }
+    //#endregion
+    
+    setLanguage(language) {
+        locale.setDefault(language);
+        return this;
+    }
+    
+    
     /**
      * Returns the underlying values of this vector as a plain array of primitive values.
      */
@@ -101,7 +161,7 @@ class Vector extends Array {
      * @returns {self}
      */
     reload(...values) {
-        return new this.constructor(...values).getMeta(this);
+        return new this.constructor(...values).getMeta(this, true);
     }
     /**
      * 
@@ -109,20 +169,7 @@ class Vector extends Array {
      */
     removeEmpty() {
         return new this.constructor([...this].filter(v => v !== null)).getMeta(this);
-    }
-    /**
-     * Copies the vector metadata (name, label etc.) from a source vector to this vector.
-     * @param {Vector} source The vector from which to copy the vector metadata.
-     * @returns Returns the vector itself.
-     */
-    getMeta(source) {
-        if(!registry.get(source)) registry.set(source, {});
-        if(!registry.get(this)) registry.set(this, {});
-        for(let m of meta) {
-            setRegistryProperty(this, m, registry.get(source)[m]);
-        }
-        return this;
-    }
+    }    
     /**
      * 
      * @returns Returns an array of the underlying values modified by the formatter meta property (if defined), otherwise returns the values as they are stored in the vector.
@@ -135,8 +182,7 @@ class Vector extends Array {
                     data.push(this.parse(this.function()(this.matrix(),i)));
                 }
             } else data = [];
-        } else data = this;
-        
+        } else data = this;        
         if(this.formatter()) {
             if(typeof this.formatter() == "object") 
             {
@@ -152,13 +198,7 @@ class Vector extends Array {
             }
         }
         else return data;
-    }
-    parent(value){
-        if(value) {
-            setRegistryProperty(this, "parent", value)
-            return this;
-        } else return registry.get(this).parent
-    }
+    }    
     /**
      * Returns a formatted value (if formatted property is defined). If the formatter is an object and the value is not found in its keys (e.g. the object key!s value s undefined), returns the original value.
      * @param {any} value Any value to be formatted.
@@ -186,7 +226,7 @@ class Vector extends Array {
             id: this.id(),
             values: this.raw(),
             name: this.name(),
-            label: this.label(),
+            label: getRegistryProperty(this, "label") || null,
             type: this.type(),
             formatter: this.formatter() ? typeof this.formatter() == "function" ? this.formatter().toString() : this.formatter() : null            
         };
@@ -194,15 +234,18 @@ class Vector extends Array {
     }
     clone(flush = false) {
         var _ = (flush ? new this.constructor() : new this.constructor(...this).getMeta(this));
+        log({class: "vector", what: this, data: {events: ["cloned"]}});
         return _;
     }
     /**
      * Removes the values from this vector.
      */
     flush() {
+        const length = this.length;
         while (this.length > 0) {
-            this.pop();
+            super.pop.call(this);
         }
+        this.trigger("vector.value.removed", {index: 0, length: length})
         return this;
     }
     /**
@@ -221,17 +264,34 @@ class Vector extends Array {
     filterByIndex(...indexes) {
         return new this.constructor(...this).filter((e,i) => [...indexes].indexOf(i) > -1).getMeta(this);
     }
+    /**
+     * Returns a clone of this vector with randomly choosen N items, where the N is defined by the "size" parameter. If greater than 1 then N = size; if 0 then returns the entire sample. If somewhere between, returns size*100% of the sample.
+     * @param {*} size 
+     * @returns {Vector}
+     */
     sample(size = 0) {
+        this.trigger("vector.sample.init", {});
         var clone = this.clone(true);
-        if(size <= 0) return clone;
+        if(size <= 0) {            
+            this.trigger("vector.sample.end", {});
+            return clone;
+        }
         else if(size < 1) size = this.length * size;
-        if(size > this.length) return clone;
+        if(size > this.length) {            
+            this.trigger("vector.sample.end", {});
+            return clone;
+        }
         else {
             var indexes = Math.getRandomIndexes(this.length, size);
             clone.push(...this.filter((v,i) => indexes.indexOf(i) > - 1));
+            this.trigger("vector.sample.end", {});
             return clone;
         }
     }
+    async trigger(eventName, data) {              
+        this.eventHandler ? this.eventHandler({name: eventName, data: data || {}, who: this}) : false;
+    }
+
     /**
      * Converts the vector to a destinated type. Returns an error if failed. If type type arguments is equal to this vector's type value, returns itself.
      * @param {integer} type The target type this vector should be converted to.
@@ -279,6 +339,7 @@ class Vector extends Array {
     localize(code,data = {}) {
         return $(code, data);
     }    
+    // #region STATIC METHODS
     static deserialize(data) {
         if(typeof data != "object") {
             try {
@@ -311,6 +372,13 @@ class Vector extends Array {
         }
         
     }    
+    /**
+     * Creates a new Vector which type is defined by the arguments' types. Overloads the common array method.
+     * @returns {Vector} 
+     */
+    static of() {
+        return [...arguments].vectorify();
+    }
     static ofType(type) {     
         return function() {
             if(type == 1) return new NumericVector(...arguments);
@@ -319,16 +387,8 @@ class Vector extends Array {
             if(type == 4) return new TimeVector(...arguments);
             else throw new Error("Unknown vector type: " + type);
         }
-    }
-    /**
-     * A proxy function to the locale handler.
-     * @param {String} code 
-     * @param {Object | undefined} data 
-     * @returns {String} Result of the localization.
-     */
-    static localize(code,data = {}) {
-        return $(code, data);
     }    
+    //#endregion 
 }
 
 /**
@@ -610,13 +670,16 @@ Array.prototype.vectorify = function() {
 
 // #endregion
 
+
+
 let _exports = {
     Vector: Vector,
-    NumericVector: NumericVector,
+    NumericVector: NumericVector,    
     StringVector: StringVector,
     BooleanVector: BooleanVector,
     TimeVector: TimeVector,
     vector: function() {return [...arguments].vectorify()},
 }
-
 module.exports = _exports;
+
+
