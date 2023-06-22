@@ -127,6 +127,9 @@ class Vector extends Array {
     concat() {
         return new this.constructor(...this, ...arguments).getMeta(this);
     }    
+    map() {
+        return super.map.call(this, ...arguments);
+    }
     push(){        
         let index = this.length;
         for(let i of [...arguments].flat(Infinity - 1)){
