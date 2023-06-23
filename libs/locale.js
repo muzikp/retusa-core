@@ -5,7 +5,9 @@ const __default = "en-GB";
 var factory = {
     "default": {
         "GSEH": "Dictionary data argument must be an object and cannot be empty.",
-        "kaex": "Language ${value} not registered, switching to default (${default})."        
+        "kaex": "Language ${value} not registered, switching to default (${default}).",
+        "91ECQmAF": "The argument is not neither a vector nor an Array. Detected type: ${type}",
+        "Rj0axQCr": "Failed to parse the matrix data."
     }
 };
 var wordList = {

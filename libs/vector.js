@@ -125,7 +125,7 @@ class Vector extends Array {
     
     //#region OVERLOADS
     /**
-     * Do not use this function yourself as it ignores the input data validation.
+     * Do not use this function yourself as it ignores the input data validation and may result in unexpected behaviour.
      */
     _push(){
         super.push(...arguments);
@@ -521,7 +521,7 @@ class StringVector extends Vector {
         }
         else if(!isNaN(config.list)) {            
             //list = Math.rndSelect(rndWordList, Number(config.list), false);
-            list = locale.getRandomWords(Number(config.list));
+            list = this.locale.getRandomWords(Number(config.list));
         } else list = config.list;
         var _new = new StringVector();
         for(var i = 0; i < total; i++) {

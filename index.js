@@ -4,6 +4,8 @@ Array.prototype.eventHandler = eventHandler;
 Object.prototype.eventHandler = eventHandler;
 Array.eventHandler = eventHandler;
 Object.eventHandler = eventHandler;
+Array.prototype.locale = locale;
+Object.prototype.locale = locale;
 Array.prototype.$ = locale.call;
 Object.prototype.$ = locale.call;
 Array.$ = locale.call;
@@ -44,6 +46,7 @@ module.exports = {
         return module.exports;
     },
     toLocale: locale.call,
-    ...(require("./libs/vector"))
+    ...(require("./libs/vector")),
+    ...(require("./libs/matrix"))
 }
 
