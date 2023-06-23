@@ -124,6 +124,12 @@ class Vector extends Array {
     //#endregion
     
     //#region OVERLOADS
+    /**
+     * Do not use this function yourself as it ignores the input data validation.
+     */
+    _push(){
+        super.push(...arguments);
+    }
     concat() {
         return new this.constructor(...this, ...arguments).getMeta(this);
     }    
@@ -163,8 +169,11 @@ class Vector extends Array {
      * @param  {...any} values An array or set of values delimited by comma.
      * @returns {self}
      */
-    reload(...values) {
+    reload(...values) {        
         return new this.constructor(...values).getMeta(this, true);
+    }
+    _reload() {
+        return this.flush()._push(...arguments);
     }
     /**
      * 
@@ -294,7 +303,6 @@ class Vector extends Array {
     async trigger(eventName, data) {              
         this.eventHandler ? this.eventHandler({name: eventName, data: data || {}, who: this}) : false;
     }
-
     /**
      * Converts the vector to a destinated type. Returns an error if failed. If type type arguments is equal to this vector's type value, returns itself.
      * @param {integer} type The target type this vector should be converted to.
@@ -467,14 +475,16 @@ class NumericVector extends Vector {
         };
         var decimal = Number(config.decimal) > 0 ? Math.floor(config.decimal) : 0;
         var total = Number(config.total) > 0 ? Number(config.total) : 100;
+        //var _new = new NumericVector();
+        
         var _new = new NumericVector();
         for(var i = 0; i < total; i++) {
             if(nullprob > 0) {
                 if(Math.random() <= nullprob) {
-                    _new.push(null);
-                } else _new.push(Math.rndNumber(min,max,decimal));
-            } else _new.push(Math.rndNumber(min,max,decimal));
-        }
+                    _new._push(null);
+                } else _new._push(Math.rndNumber(min,max,decimal));
+            } else _new._push(Math.rndNumber(min,max,decimal));
+        };
         return _new;
     };
 }
@@ -517,9 +527,9 @@ class StringVector extends Vector {
         for(var i = 0; i < total; i++) {
             if(nullprob > 0) {
                 if(Math.random() <= nullprob) {
-                    _new.push(null);
-                } else _new.push(Math.rndSelectOne(list))
-            } else _new.push(Math.rndSelectOne(list));
+                    _new._push(null);
+                } else _new._push(Math.rndSelectOne(list))
+            } else _new._push(Math.rndSelectOne(list));
         }
         return _new;
     };
@@ -556,9 +566,9 @@ class BooleanVector extends Vector {
         for(var i = 0; i < total; i++) {
             if(nullprob > 0) {
                 if(Math.random() <= nullprob) {
-                    _new.push(null);
-                } else _new.push(Math.rndSelectOne(list))
-            } else _new.push(Math.rndSelectOne(list))
+                    _new._push(null);
+                } else _new._push(Math.rndSelectOne(list))
+            } else _new._push(Math.rndSelectOne(list))
         }
         return _new;
     };
@@ -624,9 +634,9 @@ class TimeVector extends Vector {
         for(var i = 0; i < total; i++) {
             if(nullprob > 0) {
                 if(Math.random() <= nullprob) {
-                    _new.push(null);
-                } else _new.push(Math.rndNumber(min,max,0));
-            } else _new.push(Math.rndNumber(min,max,0));
+                    _new._push(null);
+                } else _new._push(Math.rndNumber(min,max,0));
+            } else _new._push(Math.rndNumber(min,max,0));
         }
         return _new;
     };

@@ -2,6 +2,24 @@ Array.prototype.hasOnlyVectorChildren = function() {
     return this.filter(e => !e?.isVector).length == 0;
 }
 
+Array.prototype.asc = function(){
+    return this.sort((a,b) => a > b ? 1 : a < b ? -1 : 0);
+}
+
+Array.prototype.desc = function(){
+    return this.sort((a,b) => a > b ? -1 : a < b ? 1 : 0);
+}
+
+Array.prototype.product = function(){
+    return this.reduce((a, b) => a * b);
+}
+
+Array.prototype.distinct = function() {
+    return this.filter((obj, index, self) => {
+        return self.findIndex(t => JSON.stringify(t) === JSON.stringify(obj)) === index;
+      }); 
+}
+
 String.prototype.fill = function(what, repetition) {
     var x = "";
     for(var i = 0; i < repetition; i++) {
