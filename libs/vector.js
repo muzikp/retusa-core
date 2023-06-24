@@ -140,8 +140,9 @@ class Vector extends Array {
      * @returns {Array}
      */
     ascIndex() {
-        let orderer = this.raw().asc();
-        return this.raw().map((v,i,a) => orderer.indexOf(v));
+        //let orderer = this.raw().asc();
+        return this.raw().asc().getRankIndexes();
+        //return this.raw().map((v,i,a) => orderer.indexOf(v));
     }
     /**
      * Private method without validation. Removes existing values and replaces them with arguments.
@@ -167,7 +168,7 @@ class Vector extends Array {
         return that;
     }
     /**
-     * Returns an array of indexes of the values ordered ascending.
+     * Returns an array of indexes of the values ordered descending.
      * May serve as a key for sorting a matrix by a ceratin column.
      * @returns {Array}
      */

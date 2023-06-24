@@ -20,6 +20,18 @@ Array.prototype.distinct = function() {
       }); 
 }
 
+Array.prototype.getRankIndexes = function() {
+  const valueToIndexMap = new Map();  
+  for (let i = 0; i < this.length; i++) {
+    const value = this[i];
+    // Only store the first occurrence of each unique value
+    if (!valueToIndexMap.has(value)) {
+      valueToIndexMap.set(value, i);
+    }
+  }  
+  return this.map((value) => valueToIndexMap.get(value));
+}
+
 String.prototype.fill = function(what, repetition) {
     var x = "";
     for(var i = 0; i < repetition; i++) {

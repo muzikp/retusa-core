@@ -250,7 +250,7 @@ class Matrix extends Array {
      */
     flush() {
         for(var v of this) {
-            v.flush();
+            v._flush();
         };
         return this;
     }
@@ -286,6 +286,15 @@ class Matrix extends Array {
         };
         if(stringify) _m = JSON.stringify(_m, config.beautify ? "\t" : null, config.beautify ? "\t" : null);
         return _m;
+    }
+    orderBy(identifier, direction) {
+        var schema = direction == "asc" ? this.item(identifier)?.ascIndex() : direction == "desc" ? this.item(identifier)?.descIndex() : null;
+        if(schema) {
+            return this._with()
+        }
+    }
+    _with() {
+        return this.empty()._push(...arguments);
     }
     async trigger(eventName, data) {              
         this.eventHandler ? this.eventHandler({name: eventName, data: data || {}, who: this}) : false;
