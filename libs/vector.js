@@ -27,6 +27,9 @@ let defaultEventHandlers = [
     }},
     {eventName: "vector.sample.end", filter: null, on: true, handler: function(event){
         
+    }},
+    {eventName: "vector.order.changed", filter: null, on: true, handler: function(event){
+        
     }}
 ];
 
@@ -122,17 +125,77 @@ class Vector extends Array {
         return getRegistryProperty(this, "id");
     }
     //#endregion
-    
+    /**
+     * Reorder the vector values ascending.
+     * @returns 
+     */
+    asc() {
+        var that = this._with(...this.raw().asc());
+        this.trigger("vector.order.changed", {direction: "asc"});
+        return that;
+    }
+    /**
+     * Returns an array of indexes of the values ordered ascending.
+     * May serve as a key for sorting a matrix by a ceratin column.
+     * @returns {Array}
+     */
+    ascIndex() {
+        let orderer = this.raw().asc();
+        return this.raw().map((v,i,a) => orderer.indexOf(v));
+    }
+    /**
+     * Private method without validation. Removes existing values and replaces them with arguments.
+     * @returns {self}
+     */
+    _with() {
+        this._flush()._push(...arguments);
+        return this;
+    }
     //#region OVERLOADS
     /**
      * Do not use this function yourself as it ignores the input data validation and may result in unexpected behaviour.
-     */
+     */    
     _push(){
         super.push(...arguments);
     }
     concat() {
         return new this.constructor(...this, ...arguments).getMeta(this);
     }    
+    desc() {
+        var that = this._with(...this.raw().desc());
+        this.trigger("vector.order.changed", {direction: "desc"});
+        return that;
+    }
+    /**
+     * Returns an array of indexes of the values ordered ascending.
+     * May serve as a key for sorting a matrix by a ceratin column.
+     * @returns {Array}
+     */
+    descIndex() {
+        let orderer = this.raw().desc();
+        return this.raw().map((v,i,a) => orderer.indexOf(v));
+    }
+    /**
+     * Removes the values from this vector.
+     */
+    flush() {
+        const length = this.length;
+        while (this.length > 0) {
+            super.pop.call(this);
+        }
+        this.trigger("vector.value.removed", {index: 0, length: length})
+        return this;
+    }    
+    /**
+     * Private flush method without events.
+     * @returns {self}
+     */
+    _flush() {        
+        while (this.length > 0) {
+            super.pop.call(this);
+        }        
+        return this;
+    }
     map() {
         return super.map.call(this, ...arguments);
     }
@@ -248,18 +311,7 @@ class Vector extends Array {
         var _ = (flush ? new this.constructor() : new this.constructor(...this).getMeta(this));
         log({class: "vector", what: this, data: {events: ["cloned"]}});
         return _;
-    }
-    /**
-     * Removes the values from this vector.
-     */
-    flush() {
-        const length = this.length;
-        while (this.length > 0) {
-            super.pop.call(this);
-        }
-        this.trigger("vector.value.removed", {index: 0, length: length})
-        return this;
-    }
+    }    
     /**
     * Instead of values, this method extracts indexes of values matching the filter (see @param) and return an array of indexes. 
     * @param {function} filter A function or a strong type filter type (string). Strong type filters: notempty, empty.
