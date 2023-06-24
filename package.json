@@ -4,7 +4,7 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "webpack --config webpack.config.js"
+    "build:commit": "webpack --config webpack.config.js && git add . && git commit -m 'autocommit'"
   },
   "keywords": ["statistics", "analysis"],
   "author": "Pavel Mužík",

@@ -10,6 +10,9 @@ let defaultEventHandlers = [
     }},
     {eventName: "matrix.vector.removed", filter: null, on: true, handler: function(event){
         
+    }},
+    {eventName: "matrix.order.changed", filter: null, on: true, handler: function(event){
+        
     }}
 ];
 
