@@ -129,43 +129,44 @@ class Vector extends Array {
      * Reorder the vector values ascending.
      * @returns 
      */
-    asc() {
-        var that = this._with(...this.raw().asc());
-        this.trigger("vector.order.changed", {direction: "asc"});
-        return that;
+    asc() {        
+        var values = [...super.asc()].flat(1);              
+        this.length = 0;
+        super.push.call(this,...values);        
+        this.trigger("vector.order.changed", {direction: "asc"});        
+        return this;
     }
     /**
      * Returns an array of indexes of the values ordered ascending.
      * May serve as a key for sorting a matrix by a ceratin column.
      * @returns {Array}
      */
-    ascIndex() {
-        //let orderer = this.raw().asc();
-        return this.raw().asc().getRankIndexes();
-        //return this.raw().map((v,i,a) => orderer.indexOf(v));
+    ascIndex() {       
+        return this.raw().asc().getRankIndexes();        
     }
     /**
      * Private method without validation. Removes existing values and replaces them with arguments.
      * @returns {self}
      */
-    _with() {
-        this._flush()._push(...arguments);
-        return this;
+    _with() {            
+        this._flush()._push(...arguments);        
     }
     //#region OVERLOADS
     /**
      * Do not use this function yourself as it ignores the input data validation and may result in unexpected behaviour.
      */    
     _push(){
-        super.push(...arguments);
+        super.push([...arguments]);        
     }
     concat() {
         return new this.constructor(...this, ...arguments).getMeta(this);
     }    
     desc() {
-        var that = this._with(...this.raw().desc());
-        this.trigger("vector.order.changed", {direction: "desc"});
-        return that;
+        var values = [...super.desc()].flat(1);              
+        this.length = 0;
+        super.push.call(this,...values);        
+        this.trigger("vector.order.changed", {direction: "desc"});        
+        return this;
     }
     /**
      * Returns an array of indexes of the values ordered descending.
@@ -173,8 +174,7 @@ class Vector extends Array {
      * @returns {Array}
      */
     descIndex() {
-        let orderer = this.raw().desc();
-        return this.raw().map((v,i,a) => orderer.indexOf(v));
+        return this.raw().desc().getRankIndexes();
     }
     /**
      * Removes the values from this vector.

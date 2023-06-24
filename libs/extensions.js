@@ -2,6 +2,12 @@ Array.prototype.hasOnlyVectorChildren = function() {
     return this.filter(e => !e?.isVector).length == 0;
 }
 
+Array.prototype.flush = function() {
+    while (this.length > 0) {
+        this.pop();
+    }
+}
+
 Array.prototype.asc = function(){
     return this.sort((a,b) => a > b ? 1 : a < b ? -1 : 0);
 }
@@ -23,11 +29,8 @@ Array.prototype.distinct = function() {
 Array.prototype.getRankIndexes = function() {
   const valueToIndexMap = new Map();  
   for (let i = 0; i < this.length; i++) {
-    const value = this[i];
-    // Only store the first occurrence of each unique value
-    if (!valueToIndexMap.has(value)) {
-      valueToIndexMap.set(value, i);
-    }
+    const value = this[i];    
+    if (!valueToIndexMap.has(value)) valueToIndexMap.set(value, i);
   }  
   return this.map((value) => valueToIndexMap.get(value));
 }
