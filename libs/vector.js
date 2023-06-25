@@ -221,13 +221,13 @@ class Vector extends Array {
 			if(apply) {
 				const values = this.raw().filter(e => e !== null);
 				super.length = 0;
-				super.push.call(this, values);				
+				super.push.call(this, ...values);				
 				return this;        
 			} else 
 			{
 				const values = this.raw().filter(e => e !== null);
 				var _new = new this.constructor().getMeta(this);
-				super.push.call(_new, values);
+				super.push.call(_new, ...values);				
 				return _new;
 			}
 				
