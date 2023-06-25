@@ -297,9 +297,28 @@ class Vector extends Array {
             return clone;
         }
     }
+		//#region EVENT HANDLING
+		/**
+		 * Turns-off raising events for this vector.
+		 * @returns {self}
+		 */
+		on() {
+			setRegistryProperty(this, "off", false);
+			return this;
+		}
+		/**
+		 * Turns-off raising events for this vector.
+		 * @returns {self}
+		 */
+		off() {
+			setRegistryProperty(this, "off", true);
+			return this;
+		}
     async trigger(eventName, data) {              
-        this.eventHandler ? this.eventHandler({name: eventName, data: data || {}, who: this}) : false;
+        if(!getRegistryProperty(this,"off")) this.eventHandler ? this.eventHandler({name: eventName, data: data || {}, who: this}) : false;
     }
+
+		//#endregion
     /**
      * Converts the vector to a destinated type. Returns an error if failed. If type type arguments is equal to this vector's type value, returns itself.
      * @param {integer} type The target type this vector should be converted to.
