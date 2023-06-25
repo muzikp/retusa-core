@@ -250,7 +250,7 @@ class Matrix extends Array {
      */
     flush() {
         for(var v of this) {
-            v._flush();
+            v.flush();
         };
         return this;
     }

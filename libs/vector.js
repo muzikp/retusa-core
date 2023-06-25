@@ -49,7 +49,7 @@ class Vector extends Array {
         setRegistryProperty(this, "eventHandlers", defaultEventHandlers);
         this.trigger("vector.created");
         if([...arguments].length > 0) this.push(...arguments);        
-    }    
+    }        
     //#region METADATA
     /**
      * Gets or sets the name of this vector. If the argument 'value' is empty, it returns the name of this vector (if set before). Otherwise the name of the vector is set and the vector itself is returned.
@@ -144,20 +144,6 @@ class Vector extends Array {
     ascIndex() {       
         return this.raw().toAvgRanks(false);        
     }
-    /**
-     * Private method without validation. Removes existing values and replaces them with arguments.
-     * @returns {self}
-     */
-    _with() {            
-        this._flush()._push(...arguments);        
-    }
-    //#region OVERLOADS
-    /**
-     * Do not use this function yourself as it ignores the input data validation and may result in unexpected behaviour.
-     */    
-    _push(){
-        super.push([...arguments]);        
-    }
     concat() {
         return new this.constructor(...this, ...arguments).getMeta(this);
     }    
@@ -180,23 +166,11 @@ class Vector extends Array {
      * Removes the values from this vector.
      */
     flush() {
-        const length = this.length;
-        while (this.length > 0) {
-            super.pop.call(this);
-        }
-        this.trigger("vector.value.removed", {index: 0, length: length})
-        return this;
-    }    
-    /**
-     * Private flush method without events.
-     * @returns {self}
-     */
-    _flush() {        
-        while (this.length > 0) {
-            super.pop.call(this);
-        }        
-        return this;
-    }
+			const length = this.length;			
+			super.length = 0;
+			this.trigger("vector.value.removed", {index: 0, length: length});			
+			return this;
+    }        
     map() {
         return super.map.call(this, ...arguments);
     }
@@ -233,11 +207,10 @@ class Vector extends Array {
      * @param  {...any} values An array or set of values delimited by comma.
      * @returns {self}
      */
-    reload(...values) {        
-        return new this.constructor(...values).getMeta(this, true);
-    }
-    _reload() {
-        return this.flush()._push(...arguments);
+    reload(...values) {       
+        super.length =  0;
+        this.push(...values);
+        return this;
     }
     /**
      * 
@@ -245,49 +218,20 @@ class Vector extends Array {
      */
     removeEmpty() {
         return new this.constructor([...this].filter(v => v !== null)).getMeta(this);
-    }    
-    /**
-     * 
-     * @returns Returns an array of the underlying values modified by the formatter meta property (if defined), otherwise returns the values as they are stored in the vector.
-     */
-    values() {
-        var data = [];
-        if(this.function()) {
-            if(this.matrix()) {
-                for(var i = 0; i < this.matrix().maxRows(); i++) {
-                    data.push(this.parse(this.function()(this.matrix(),i)));
-                }
-            } else data = [];
-        } else data = this;        
-        if(this.formatter()) {
-            if(typeof this.formatter() == "object") 
-            {
-                return data.map(e => e === null ? null : this.formatter()[e] || e);
-            }
-            else if(typeof this.formatter() == "function") {
-                const f = this.formatter();
-                return data.map(e => f(e));
-            }
-            else {
-                const f = eval(`[${this.formatter()}][0]`);
-                return data.map(e => f(e));
-            }
-        }
-        else return data;
-    }    
+    }
     /**
      * Returns a formatted value (if formatted property is defined). If the formatter is an object and the value is not found in its keys (e.g. the object key!s value s undefined), returns the original value.
      * @param {any} value Any value to be formatted.
      */
     format(value, index, parent) {
-        const f = getRegistryProperty(this, "formatter");
+        const f = getRegistryProperty(this, "formatter");				
         if(f)
-        {
-            if(typeof f == "object") return f[value] !== undefined ? f[value] : value;
-            else if(typeof f == "function") return f(value, index, parent || this);
-            else if(typeof f == "string") {
-                return eval(`[${f}][0]`)(value, index, parent || this);
-            }
+        {					
+					if(typeof f == "object") return f[value] !== undefined ? f[value] : value;
+					else if(typeof f == "function") return f(value, index, parent || this);
+					else if(typeof f == "string") {
+						return eval(`[${f}][0]`)(value, index, parent || this);
+					}
         }
         else return value;
     }
@@ -528,16 +472,14 @@ class NumericVector extends Vector {
         };
         var decimal = Number(config.decimal) > 0 ? Math.floor(config.decimal) : 0;
         var total = Number(config.total) > 0 ? Number(config.total) : 100;
-        //var _new = new NumericVector();
-        
-        var _new = new NumericVector();
-        for(var i = 0; i < total; i++) {
+        var _new = new NumericVector();                                
+        for(var i = 0; i < total; i++) {            
             if(nullprob > 0) {
                 if(Math.random() <= nullprob) {
-                    _new._push(null);
-                } else _new._push(Math.rndNumber(min,max,decimal));
-            } else _new._push(Math.rndNumber(min,max,decimal));
-        };
+                    Array.prototype.push.call(_new,null);
+                } else Array.prototype.push.call(_new, Math.rndNumber(min,max,decimal));
+            } else Array.prototype.push.call(_new, Math.rndNumber(min,max,decimal));
+        };        
         return _new;
     };
 }
@@ -580,9 +522,9 @@ class StringVector extends Vector {
         for(var i = 0; i < total; i++) {
             if(nullprob > 0) {
                 if(Math.random() <= nullprob) {
-                    _new._push(null);
-                } else _new._push(Math.rndSelectOne(list))
-            } else _new._push(Math.rndSelectOne(list));
+                    Array.prototype.push.call(_new, null);
+                } else Array.prototype.push.call(_new, Math.rndSelectOne(list))
+            } else Array.prototype.push.call(_new, Math.rndSelectOne(list));
         }
         return _new;
     };
@@ -619,9 +561,9 @@ class BooleanVector extends Vector {
         for(var i = 0; i < total; i++) {
             if(nullprob > 0) {
                 if(Math.random() <= nullprob) {
-                    _new._push(null);
-                } else _new._push(Math.rndSelectOne(list))
-            } else _new._push(Math.rndSelectOne(list))
+                    Array.prototype.push.call(_new, null);
+                } else Array.prototype.push.call(_new, Math.rndSelectOne(list))
+            } else Array.prototype.push.call(_new, Math.rndSelectOne(list))
         }
         return _new;
     };
@@ -642,17 +584,7 @@ class TimeVector extends Vector {
             if(this.parse) super.push(this.parse(i));
             else super.push(i);
         }
-    }
-    /**
-     * 
-     * @returns Returns values of this vector converted to integers.
-     */
-    raw() {
-        return [...this].map(function(e){
-            if(e !== null) return e.getTime();
-            else return null;
-        })
-    }
+    }    
     /**
      * Returns the type of this vector, either as an enumeration (integer) or as a class name.
      * @param {boolean} verbose If the argument is true, it returns the full class name of the vector (eg NominalVector). Otherwise, it returns an enumeration (eg 3).
@@ -687,9 +619,9 @@ class TimeVector extends Vector {
         for(var i = 0; i < total; i++) {
             if(nullprob > 0) {
                 if(Math.random() <= nullprob) {
-                    _new._push(null);
-                } else _new._push(Math.rndNumber(min,max,0));
-            } else _new._push(Math.rndNumber(min,max,0));
+                    Array.prototype.push.call(_new, null);
+                } else Array.prototype.push.call(_new, Math.rndNumber(min,max,0));
+            } else Array.prototype.push.call(_new, Math.rndNumber(min,max,0));
         }
         return _new;
     };

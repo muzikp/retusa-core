@@ -1,12 +1,13 @@
 Array.prototype.hasOnlyVectorChildren = function() {
   return this.filter(e => !e?.isVector).length == 0;
 }
-
+/*
 Array.prototype.flush = function() {
   while (this.length > 0) {
     this.pop();
   }
 }
+*/
 
 Array.prototype.asc = function(){
     return this.sort((a,b) => a > b ? 1 : a < b ? -1 : 0);
@@ -14,10 +15,6 @@ Array.prototype.asc = function(){
 
 Array.prototype.desc = function(){
   return this.sort((a,b) => a > b ? -1 : a < b ? 1 : 0);
-}
-
-Array.prototype.product = function(){
-  return this.reduce((a, b) => a * b);
 }
 
 Array.prototype.distinct = function() {
