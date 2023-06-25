@@ -214,14 +214,23 @@ class Vector extends Array {
     }
     /**
 		 * Removes empty (null) values from the vector.
-		 * @param {boolean} apply If true, removes empty values from the original vector. Other returns a clone without empty values. Default false.
-		 * @returns 
+		 * @param {boolean} apply If true, removes empty values from the original vector. Otherwise returns a clone without empty values. Default false.
+		 * @returns {self}
 		 */
     removeEmpty(apply = false) {
+			if(apply) {
 				const values = this.raw().filter(e => e !== null);
 				super.length = 0;
 				super.push.call(this, values);				
 				return this;        
+			} else 
+			{
+				const values = this.raw().filter(e => e !== null);
+				var _new = new this.constructor().getMeta(this);
+				super.push.call(_new, values);
+				return _new;
+			}
+				
     }
     /**
      * Returns a formatted value (if formatted property is defined). If the formatter is an object and the value is not found in its keys (e.g. the object key!s value s undefined), returns the original value.
