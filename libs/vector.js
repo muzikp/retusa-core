@@ -213,11 +213,15 @@ class Vector extends Array {
         return this;
     }
     /**
-     * 
-     * @returns {this} This vector filtered from the null values.
-     */
-    removeEmpty() {
-        return new this.constructor([...this].filter(v => v !== null)).getMeta(this);
+		 * Removes empty (null) values from the vector.
+		 * @param {boolean} apply If true, removes empty values from the original vector. Other returns a clone without empty values. Default false.
+		 * @returns 
+		 */
+    removeEmpty(apply = false) {
+				const values = this.raw().filter(e => e !== null);
+				super.length = 0;
+				super.push.call(this, values);				
+				return this;        
     }
     /**
      * Returns a formatted value (if formatted property is defined). If the formatter is an object and the value is not found in its keys (e.g. the object key!s value s undefined), returns the original value.
