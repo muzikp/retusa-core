@@ -142,7 +142,7 @@ class Vector extends Array {
      * @returns {Array}
      */
     ascIndex() {       
-        return this.raw().asc().getRankIndexes();        
+        return this.raw().toAvgRanks(false);        
     }
     /**
      * Private method without validation. Removes existing values and replaces them with arguments.
@@ -174,7 +174,7 @@ class Vector extends Array {
      * @returns {Array}
      */
     descIndex() {
-        return this.raw().desc().getRankIndexes();
+        return this.raw().toAvgRanks(true);     
     }
     /**
      * Removes the values from this vector.

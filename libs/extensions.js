@@ -1,11 +1,11 @@
 Array.prototype.hasOnlyVectorChildren = function() {
-    return this.filter(e => !e?.isVector).length == 0;
+  return this.filter(e => !e?.isVector).length == 0;
 }
 
 Array.prototype.flush = function() {
-    while (this.length > 0) {
-        this.pop();
-    }
+  while (this.length > 0) {
+    this.pop();
+  }
 }
 
 Array.prototype.asc = function(){
@@ -13,34 +13,37 @@ Array.prototype.asc = function(){
 }
 
 Array.prototype.desc = function(){
-    return this.sort((a,b) => a > b ? -1 : a < b ? 1 : 0);
+  return this.sort((a,b) => a > b ? -1 : a < b ? 1 : 0);
 }
 
 Array.prototype.product = function(){
-    return this.reduce((a, b) => a * b);
+  return this.reduce((a, b) => a * b);
 }
 
 Array.prototype.distinct = function() {
-    return this.filter((obj, index, self) => {
-        return self.findIndex(t => JSON.stringify(t) === JSON.stringify(obj)) === index;
-      }); 
+	return this.filter((obj, index, self) => {
+			return self.findIndex(t => JSON.stringify(t) === JSON.stringify(obj)) === index;
+	}); 
 }
 
-Array.prototype.getRankIndexes = function() {
-  const valueToIndexMap = new Map();  
-  for (let i = 0; i < this.length; i++) {
-    const value = this[i];    
-    if (!valueToIndexMap.has(value)) valueToIndexMap.set(value, i);
-  }  
-  return this.map((value) => valueToIndexMap.get(value));
+Array.prototype.toAvgRanks = function(desc = false) {
+	const dir = desc ? -1 : 1;
+  const _ = [...this].sort((a,b) => a > b ? dir : a < b ? -dir :0);  
+  var map = new Map();
+  for(var i = 0; i < _.length; i++) {    
+    var f = map.get(_[i]);    
+    if(!f) map.set(_[i], i + 1)
+    else map.set(_[i], f += 0.5);    
+  };    
+  return this.map(e => map.get(e));
 }
 
 String.prototype.fill = function(what, repetition) {
-    var x = "";
-    for(var i = 0; i < repetition; i++) {
-        x =+ what;
-    }
-    return x;
+	var x = "";
+	for(var i = 0; i < repetition; i++) {
+		x =+ what;
+	}
+	return x;
 }
 
 
